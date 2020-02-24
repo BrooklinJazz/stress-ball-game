@@ -1,5 +1,4 @@
 import React from 'react';
-import { Text } from 'react-native';
 
 import styled from "styled-components/native"
 
@@ -9,10 +8,36 @@ const Container = styled.View`
   align-items: center;
 `
 
+const BaseText = styled.Text`
+  color: ${props => props.color};
+`
+
+const BaseButton = styled.TouchableOpacity`
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  height: 40px;
+  min-width: 100px;
+`;
+
+export const Button = ({children, color, ...props}) => (
+  <BaseButton {...props}>
+    <BaseText color={color} >{children}</BaseText>
+  </BaseButton>
+);
+
+export const success = "#43a047";
+
+export const SuccessButton = styled(Button).attrs(props => ({
+  color: "white",
+}))`
+  background-color: ${success};
+`;
+
 export default function App() {
   return (
     <Container>
-      <Text>Open up App.js to start working on your app!</Text>
+      <SuccessButton>Start</SuccessButton>
     </Container>
   );
 }
