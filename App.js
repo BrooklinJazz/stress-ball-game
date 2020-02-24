@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text } from "react-native";
 import styled from "styled-components/native";
 
@@ -36,7 +36,9 @@ export const SuccessButton = styled(Button).attrs(props => ({
 
 const GameState = {
   playing: "playing",
-  starting: "starting"
+  starting: "starting",
+  won: "won",
+  lost: "lost"
 };
 
 const StressContainer = styled.View`
@@ -61,21 +63,57 @@ const StressBar = ({ stressLevel }) => {
   );
 };
 
-const Game = () => {
+const StressBall = styled(SuccessButton)`
+  border-radius: 50%;
+  margin-top: 15px;
+  min-width: 50px;
+  height: 50px;
+`
+
+const Game = ({winGame, loseGame}) => {
+  const [stressLevel, setStressLevel] = useState(255 / 2);
+  useEffect(() => {
+    const stressInterval = setInterval(() => {
+      setStressLevel(prevLevel => Math.min(prevLevel + 1, 255));
+    }, 20);
+    return () => clearInterval(stressInterval);
+  }, [stressLevel]);
+
+  useEffect(() => {
+    if (stressLevel >= 255) {
+      loseGame()
+    } else if (stressLevel <= 0) {
+      winGame()
+    }
+  }, [stressLevel])
+
+  const reduceStress = () => setStressLevel(prevLevel => Math.max(prevLevel - 30, 0))
+
   return (
-    <StressBar stressLevel={30}/>
+    <>
+    <StressBar stressLevel={stressLevel}/>
+    <StressBall onPress={reduceStress}/>
+    </>
   );
 };
+
+const danger = "#b00020";
+
+const DangerButton = styled(Button)`
+  background-color: ${danger};
+`
 
 export default function App() {
   const [gameState, setGameState] = useState(GameState.starting);
   const startGame = () => setGameState(GameState.playing);
+  const winGame = () => setGameState(GameState.won);
+  const loseGame = () => setGameState(GameState.lost);
   return (
     <Container>
-      {gameState === GameState.starting && (
-        <SuccessButton onPress={startGame}>Start</SuccessButton>
-      )}
-      {gameState === GameState.playing && <Game />}
+      {gameState === GameState.starting && <SuccessButton onPress={startGame}>Start</SuccessButton>}
+      {gameState === GameState.playing && <Game loseGame={loseGame} winGame={winGame} />}
+      {gameState === GameState.lost && <DangerButton onPress={startGame}>You Lost, Try Again?</DangerButton>}
+      {gameState === GameState.won && <SuccessButton onPress={startGame}>You Won, Play Again?</SuccessButton>}
     </Container>
-  );
+  );s
 }
